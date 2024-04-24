@@ -16,7 +16,7 @@
 """
 import collections
 
-from typing import Union
+from typing import Dict, Set, Union
 
 from aiohttp import web
 from aiohttp import hdrs
@@ -129,10 +129,10 @@ class ResourcesUrlDispatcherRouterAdapter(AbstractRouterAdapter):
         self._default_config = defaults
 
         # Mapping from Resource to _ResourceConfig.
-        self._resource_config = {}
+        self._resource_config = {}  # type: Dict[web.AbstractResource, _ResourceConfig]
 
-        self._resources_with_preflight_handlers = set()
-        self._preflight_routes = set()
+        self._resources_with_preflight_handlers = set()  # type: Set[web.AbstractResource]
+        self._preflight_routes = set()  # type: Set[web.AbstractRoute]
 
     def add_preflight_handler(
             self,
@@ -159,16 +159,17 @@ class ResourcesUrlDispatcherRouterAdapter(AbstractRouterAdapter):
                         return  # already added
                     else:
                         raise ValueError(
-                            "{!r} already has OPTIONS handler {!r}"
-                            .format(resource, route_obj.handler))
+                            f"{resource!r} already has OPTIONS handler {route_obj.handler!r}"
+                        )
                 elif route_obj.method == hdrs.METH_ANY:
                     if _is_web_view(route_obj):
                         self._preflight_routes.add(route_obj)
                         self._resources_with_preflight_handlers.add(resource)
                         return
                     else:
-                        raise ValueError("{!r} already has a '*' handler "
-                                         "for all methods".format(resource))
+                        raise ValueError(
+                            f"{resource!r} already has a '*' handler for all methods"
+                        )
 
             preflight_route = resource.add_route(hdrs.METH_OPTIONS, handler)
             self._preflight_routes.add(preflight_route)
@@ -196,20 +197,19 @@ class ResourcesUrlDispatcherRouterAdapter(AbstractRouterAdapter):
 
         else:
             raise ValueError(
-                "Resource or ResourceRoute expected, got {!r}".format(
-                    routing_entity))
+                f"Resource or ResourceRoute expected, got {routing_entity!r}"
+            )
 
     def is_cors_for_resource(self, resource: web.Resource) -> bool:
         """Is CORS is configured for the resource"""
         return resource in self._resources_with_preflight_handlers
 
-    def _request_route(self, request: web.Request) -> web.ResourceRoute:
+    def _request_route(self, request: web.Request) -> web.AbstractRoute:
         match_info = request.match_info
         assert isinstance(match_info, web.UrlMappingMatchInfo)
         return match_info.route
 
     def _request_resource(self, request: web.Request) -> web.Resource:
-        # return self._request_route(request).resource
         route = self._request_route(request)
         if _is_web_view(route, strict=False) and not hasattr(
             route.handler,
