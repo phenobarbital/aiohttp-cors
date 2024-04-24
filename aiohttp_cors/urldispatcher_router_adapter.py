@@ -211,7 +211,10 @@ class ResourcesUrlDispatcherRouterAdapter(AbstractRouterAdapter):
     def _request_resource(self, request: web.Request) -> web.Resource:
         # return self._request_route(request).resource
         route = self._request_route(request)
-        if _is_web_view(route, strict=False) and not hasattr(route.handler, request.method.lower()):
+        if _is_web_view(route, strict=False) and not hasattr(
+            route.handler,
+            request.method.lower()
+        ):
             resource = None
         else:
             resource = route.resource
