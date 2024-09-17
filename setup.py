@@ -67,7 +67,7 @@ setup(
     ],
     test_suite="tests",
     install_requires=[
-        "aiohttp>=1.1",
+        "aiohttp>=3.1",
         "typing;python_version<'3.5'",
     ],
     license=about["__license__"],

@@ -18,7 +18,7 @@ Library meta information.
 This module must be stand-alone executable.
 """
 
-__title__ = "aiohttp-cors"
+__title__ = "alt-aiohttp-cors"
 __version__ = "0.7.1"
 __author__ = "Vladimir Rutsky and aio-libs team"
 __email__ = "vladimir@rutsky.org"
